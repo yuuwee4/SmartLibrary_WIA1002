@@ -63,4 +63,59 @@ public class BookBST {
         // If target is smaller, search left; otherwise, search right.
         return (i < r.isbn) ? sea(r.left, i) : sea(r.right, i);
     }
+
+    public void inorder() {
+        if(root==null){
+         System.out.println("List is empty! Please add book first.");
+         return;
+        }
+        inorderRec(root);
+    }
+
+    private void inorderRec(Book root) {
+        if (root != null) {
+            inorderRec(root.left);
+            System.out.println("ISBN: " + root.isbn + " Title: " + root.title);
+            inorderRec(root.right);
+        }
+    }
+    
+    public void delete(int i) {
+        root = deleteRec(root, i);
+    }
+
+    private Book deleteRec(Book root, int i) {
+        if (root == null){
+            return root;
+        }
+
+        if (i < root.isbn){
+            root.left = deleteRec(root.left, i);
+        }
+        else if (i > root.isbn){
+            root.right = deleteRec(root.right, i);
+        }
+        else {
+            if (root.left == null){
+                return root.right;
+            }
+            else if (root.right == null){
+                return root.left;
+            }
+            root.isbn = minValue(root.right);
+            root.right = deleteRec(root.right, root.isbn);
+        }
+
+        return root;
+    }
+
+    private int minValue(Book root) {
+        int minv = root.isbn;
+        while (root.left != null) {
+            minv = root.left.isbn;
+            root = root.left;
+        }
+        return minv;
+    }
+    
 }
