@@ -40,6 +40,23 @@ public class SmartLibrary implements LibraryADT {
         System.out.println("Borrowing History (Most Recent) : ");
         history.show();
     }
+
+    @Override
+    public void viewAllBooks(){
+        System.out.println("Current Library Catalogue (Sorted by ISBN)");
+        catalogue.inorder();
+    }
+    
+    @Override
+    public void removeBookFromCatalogue(int isbn){
+        Book b = catalogue.search(isbn);
+        if (b != null){
+            catalogue.delete(isbn);
+            System.out.println("Success! "+b.title+" has been removed from the library catalogue.");
+        } else {
+            System.out.println("Error! Cannot remove. Book with ISBN "+isbn+" does not exist.");
+        }
+    }
     
     public void runMenu() {
         Scanner sc = new Scanner(System.in);
