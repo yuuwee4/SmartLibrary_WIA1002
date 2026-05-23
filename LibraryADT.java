@@ -7,4 +7,8 @@ public interface LibraryADT {
     void borrowBook(int isbn);
     
     void viewLatestHistory();
+
+    void viewAllBooks();
+    
+    void removeBookFromCatalogue(int isbn);
 }
