@@ -120,4 +120,23 @@ public class BookBST {
       }
         return root;
     }   
+
+    /**
+     * Public method to get the total number of books currently in the catalogue.
+     * This showcases recursive tree traversal.
+     */
+    public int getTotalBooksCount() {
+        return countNodes(root);
+    }
+
+    /**
+     * Private recursive helper to count nodes in the BST.
+     * Efficiency: O(n) as it visits every node once.
+     */
+    private int countNodes(Book current) {
+        if (current == null) {
+            return 0;
+        }
+        return countNodes(current.left) + countNodes(current.right) + 1;
+    }
 }
