@@ -69,7 +69,7 @@ public class SmartLibrary implements LibraryADT {
             System.out.println("3. Borrow Book");
             System.out.println("4. View History");
             System.out.println("5. Exit");
-            System.out.println("Please enter your choice : ");
+            System.out.print("Please enter your choice : ");
             
             try {
                 int choice = Integer.parseInt(sc.nextLine().trim());
@@ -93,11 +93,11 @@ public class SmartLibrary implements LibraryADT {
        try {
            switch (choice){
                case 1 :
-                   System.out.println("Enter ISBN (Integers only) : ");
+                   System.out.print("Enter ISBN (Integers only) : ");
                    int isbn = Integer.parseInt(sc.nextLine().trim());
-                   System.out.println("Enter title : ");
+                   System.out.print("Enter title : ");
                    String title = sc.nextLine().trim();
-                   System.out.println("Enter author : ");
+                   System.out.print("Enter author : ");
                    String author = sc.nextLine().trim();
                    
                    if (title.isEmpty() || author.isEmpty()){
@@ -130,5 +130,4 @@ public class SmartLibrary implements LibraryADT {
            System.out.println("Error! ISBN must be a valid integer number. Operation canceled.");
        }
    }
-    
 }

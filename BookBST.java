@@ -102,20 +102,22 @@ public class BookBST {
             else if (root.right == null){
                 return root.left;
             }
-            root.isbn = minValue(root.right);
-            root.right = deleteRec(root.right, root.isbn);
+           Book successor = findMin(root.right);
+
+           root.isbn = successor.isbn;
+           root.title = successor.title;
+           root.author = successor.author;
+
+           root.right = deleteRec(root.right, successor.isbn);
         }
 
         return root;
     }
 
-    private int minValue(Book root) {
-        int minv = root.isbn;
-        while (root.left != null) {
-            minv = root.left.isbn;
-            root = root.left;
-        }
-        return minv;
-    }
-    
+    private Book findMin(Book root) {
+      while (root.left != null) {
+        root = root.left;
+      }
+        return root;
+    }   
 }

@@ -11,5 +11,4 @@ public class Book {
         this.left = null;
         this.right = null;
     }
-    
 }
