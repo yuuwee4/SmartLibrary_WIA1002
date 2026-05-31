@@ -8,53 +8,61 @@ public class BorrowStack {
     private Stack<Book> stack = new Stack<>();
 
     /**
-     * Add book in the last of the node in order to apply LIFO method
-     * @param a
+     * Pushes a book onto the top of the stack, following the LIFO principle
+     * @param a The book to be added to the borrowing history
      */
     public void push(Book a){
         stack.push(a);
     }
     /**
-     * Remove the most recent book from the stach
+     * Removes and return the most recent book from the stack
      */
     public Book pop(){
         return stack.pop();
     }
     /**
-     * see the most recent book added
-     * @return
+     * Returns the most recently borrowed book withouth removing it from the stack
+     * @return The most recent (top) Book object.
      */
     public Book peek(){
         return stack.peek();
     }
     /**
-     * Check whether stack empty/not
-     * @return
+     * Check whether the borrowing history stack is empty
+     * @return true if the stackk is empty
      */
     public boolean isEmpty(){
         return stack.isEmpty();
     }
     /**
-     * clear all the stack
+     * Clears all borrowing history from the stack
      */
     public void clear(){
         stack.clear();
     }
+    /**
+     * Returns the total number of borrowed books currently in the stack
+     * @return
+     */
     public int totalBooksBorrowed(){
         return stack.size();
     }
     
     /**
-     * Showing all of the books borrowed starting from the most recent borrowed
+     * Displays the borrowing history in a tabular format
      */
     public void show(){
         if(stack.isEmpty()){
             System.out.println("History is Empty");
         }else{
-            int count = 0;
-            for(int i = stack.size(); i >= 0;i--){
+            System.out.println("\n------------------ Borrowing History ------------------");
+            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^*");
+            System.out.printf("| %-4s | %-15s | %-25s |\n","No.","ISBN","Title");
+            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^*");
+            int count = 1;
+            for(int i = stack.size() -1; i > 0;i--){
                 Book a = stack.get(i);
-                System.out.println("No." + count + "[ISBN: " + a.isbn + "] " + a.title);
+                System.out.printf("| %-4d | %-15d | %-25s |\n",count + ".",a.isbn,a.title);
                 count++;
             }
         }
