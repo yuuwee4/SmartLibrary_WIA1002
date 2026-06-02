@@ -7,8 +7,15 @@ public class SmartLibrary implements LibraryADT {
     
     @Override
     public void addBook(int isbn, String title, String author) {
-       catalogue.insert(isbn, title, author);
-       System.out.println("Success! "+title+" has been added to the catalogue.");
+
+        //check for duplicate ISBN
+        if (catalogue.search(isbn) != null) {
+            System.out.println("Error! ISBN " + isbn + " already exists.");
+            return;
+        }
+
+        catalogue.insert(isbn, title, author);
+        System.out.println("Success! "+title+" has been added to the catalogue.");
     }
 
     @Override
@@ -28,7 +35,13 @@ public class SmartLibrary implements LibraryADT {
     public void borrowBook(int isbn) {
        Book b = catalogue.search(isbn);
        if (b != null){
-           history.push(b);
+            //Create a copy for history
+            Book borrowedBook = new Book(b.isbn, b.title, b.author);
+
+           history.push(borrowedBook);
+
+           catalogue.delete(isbn);
+
            System.out.println("Success! You have borrowed "+b.title+".");
        } else {
            System.out.println("Error! Cannot borrow. Book is not in catalogue.");
