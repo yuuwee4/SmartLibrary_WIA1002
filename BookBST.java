@@ -1,3 +1,4 @@
+import java.util.*;
 /**
  * BookBST.java
  * Responsibility: Manages the collection of books using a Binary Search Tree (BST)
@@ -138,5 +139,27 @@ public class BookBST {
             return 0;
         }
         return countNodes(current.left) + countNodes(current.right) + 1;
+    }
+
+    /**
+     * Public method to retrieve all books in the catalogue as a list.
+     * Often used by LibraryManagement for external file operations.
+     */
+    public ArrayList<Book> getAllBooks(){
+        ArrayList<Book> list = new ArrayList<>();
+        collectInorder(root,list);
+        return list;
+    }
+
+    /**
+     *  Private recursive helper to collect nodes into an ArrayList
+     *  Uses in-order traversal to ensure the list is sorted by ISBN
+     */
+    private void collectInorder(Book node, ArrayList<Book> list){
+        if(node != null){
+            collectInorder(node.left,list);
+            list.add(node);
+            collectInorder(node.right,list);
+        }
     }
 }

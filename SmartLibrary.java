@@ -1,14 +1,38 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class SmartLibrary implements LibraryADT {
 
     private BookBST catalogue = new BookBST();
     private BorrowStack history = new BorrowStack();
     
+    // Addition : Handles file operations to load and save data
+    private LibraryManagement fileManager = new LibraryManagement();
+
+    // Addition : Default text file for storing the library catalogue
+    private String fileName = "book_library.txt";
+
     @Override
     public void addBook(int isbn, String title, String author) {
        catalogue.insert(isbn, title, author);
        System.out.println("Success! "+title+" has been added to the catalogue.");
+    }
+    
+    // Addition : Searches for books by title using the file manager.
+    @Override
+    public void searchBook(String name){
+        ArrayList<Book> a = fileManager.searchByTitle(name,catalogue);
+        if(a.isEmpty()){
+            System.out.println("\nNo item found");
+        }else{
+            System.out.println("\nBook found!");
+            for(int i =0; i < a.size();i++){
+                Book s = a.get(i);
+                System.out.println("ISBN : " + s.getIsbn());
+                System.out.println("Title : "+ s.getTitle());
+                System.out.println("Author : " + s.getAuthor());
+                System.out.println("-----------------------");
+            }
+        }
     }
 
     @Override
@@ -59,9 +83,10 @@ public class SmartLibrary implements LibraryADT {
     }
     
     public void runMenu() {
+        fileManager.loadFromFile(fileName, catalogue);
         Scanner sc = new Scanner(System.in);
         while (true){
-            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^");
+            System.out.println("\n^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^");
             System.out.println("Welcome to Smart Library!");
             System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^");
             System.out.println("1. Add Book");
@@ -76,6 +101,7 @@ public class SmartLibrary implements LibraryADT {
                 
                 if (choice == 5){
                     System.out.println("Exiting Smart Library System. Goodbye!");
+                    fileManager.saveToFile("book_library.txt",catalogue);
                     break;
                 }
                 
@@ -108,12 +134,35 @@ public class SmartLibrary implements LibraryADT {
                    break;
                    
                case 2 :
-                   System.out.println("Enter ISBN to search : ");
-                   int searchIsbn = Integer.parseInt(sc.nextLine().trim());
-                   searchBook(searchIsbn);
+                   fileManager.displayAll(catalogue);
+                   System.out.println("\nSearch options: ");
+                   System.out.println("1. Search by title\n2. Search by ISBN");
+                   System.out.print("Choose option (1 or 2) : ");
+                   int userInput = Integer.parseInt(sc.nextLine().trim());
+                   try{
+                    switch(userInput){
+                        case 1:
+                            // Addition : Handles title search
+                            System.out.print("Enter title to search : ");
+                            String search = sc.nextLine().trim();
+                            searchBook(search);
+                            break;
+                        case 2:
+                            System.out.println("Enter ISBN to search : ");
+                            int searchIsbn = Integer.parseInt(sc.nextLine().trim());
+                            searchBook(searchIsbn);
+                            break;
+                        default: 
+                            System.out.println("Invalid choice. Please select an option between 1-2");
+                            break;
+                    }
+                   }catch(NumberFormatException e){
+                        System.out.println("Error! Must be a valid integer number. Operation canceled.");
+                   }
                    break;
                    
                case 3 :
+                    fileManager.displayAll(catalogue);
                    System.out.println("Enter ISBN to borrow : ");
                    int borrowIsbn = Integer.parseInt(sc.nextLine().trim());
                    borrowBook(borrowIsbn);

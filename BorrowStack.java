@@ -55,14 +55,14 @@ public class BorrowStack {
         if(stack.isEmpty()){
             System.out.println("History is Empty");
         }else{
-            System.out.println("\n------------------ Borrowing History ------------------");
-            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^*");
-            System.out.printf("| %-4s | %-15s | %-25s |\n","No.","ISBN","Title");
-            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^*");
+            System.out.println("\n------------------ Borrow History ------------------");
+            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^**^^*^*^*^*^*^*^^*^*^*^*^*");
+            System.out.printf("| %-4s | %-10s | %-45s | %-20s |\n","No.","ISBN","Title","Author");
+            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^**^^*^*^*^*^*^*^^*^*^*^*^*");
             int count = 1;
             for(int i = stack.size() -1; i > 0;i--){
                 Book a = stack.get(i);
-                System.out.printf("| %-4d | %-15d | %-25s |\n",count + ".",a.isbn,a.title);
+                System.out.printf("| %-4s | %-10d | %-45s | %-20s |\n",count + ".",a.isbn,a.title,a.author);
                 count++;
             }
         }
