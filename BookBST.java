@@ -65,20 +65,8 @@ public class BookBST {
         return (i < r.isbn) ? sea(r.left, i) : sea(r.right, i);
     }
 
-    public void inorder() {
-        if(root==null){
-         System.out.println("List is empty! Please add book first.");
-         return;
-        }
-        inorderRec(root);
-    }
-
-    private void inorderRec(Book root) {
-        if (root != null) {
-            inorderRec(root.left);
-            System.out.println("ISBN: " + root.isbn + " Title: " + root.title);
-            inorderRec(root.right);
-        }
+    public boolean isEmpty(){
+        return root==null;
     }
     
     public void delete(int i) {
