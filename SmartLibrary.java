@@ -13,8 +13,15 @@ public class SmartLibrary implements LibraryADT {
 
     @Override
     public void addBook(int isbn, String title, String author) {
-       catalogue.insert(isbn, title, author);
-       System.out.println("Success! "+title+" has been added to the catalogue.");
+
+        //check for duplicate ISBN
+        if (catalogue.search(isbn) != null) {
+            System.out.println("Error! ISBN " + isbn + " already exists.");
+            return;
+        }
+
+        catalogue.insert(isbn, title, author);
+        System.out.println("Success! "+title+" has been added to the catalogue.");
     }
     
     // Addition : Searches for books by title using the file manager.
@@ -40,9 +47,9 @@ public class SmartLibrary implements LibraryADT {
         Book b = catalogue.search(isbn);
         if ( b != null ){
             System.out.println("Book Found!");
-            System.out.println("ISBN : "+b.isbn);
-            System.out.println("Title : "+b.title);
-            System.out.println("Author : "+b.author);
+            System.out.println("ISBN : "+b.getIsbn());
+            System.out.println("Title : "+b.getTitle());
+            System.out.println("Author : "+b.getAuthor());
         } else {
             System.out.println("Error! Book with ISBN "+isbn+" not found.");
         }
@@ -52,8 +59,14 @@ public class SmartLibrary implements LibraryADT {
     public void borrowBook(int isbn) {
        Book b = catalogue.search(isbn);
        if (b != null){
-           history.push(b);
-           System.out.println("Success! You have borrowed "+b.title+".");
+            //Create a copy for history
+            Book borrowedBook = new Book(b.getIsbn(), b.getTitle(), b.getAuthor());
+
+           history.push(borrowedBook);
+
+           catalogue.delete(isbn);
+
+           System.out.println("Success! You have borrowed "+b.getTitle()+".");
        } else {
            System.out.println("Error! Cannot borrow. Book is not in catalogue.");
        }
@@ -76,7 +89,7 @@ public class SmartLibrary implements LibraryADT {
         Book b = catalogue.search(isbn);
         if (b != null){
             catalogue.delete(isbn);
-            System.out.println("Success! "+b.title+" has been removed from the library catalogue.");
+            System.out.println("Success! "+b.getTitle()+" has been removed from the library catalogue.");
         } else {
             System.out.println("Error! Cannot remove. Book with ISBN "+isbn+" does not exist.");
         }

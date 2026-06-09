@@ -60,9 +60,9 @@ public class BorrowStack {
             System.out.printf("| %-4s | %-10s | %-45s | %-20s |\n","No.","ISBN","Title","Author");
             System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^^*^*^*^*^*^*^^*^*^*^*^**^^*^*^*^*^*^*^^*^*^*^*^*");
             int count = 1;
-            for(int i = stack.size() -1; i > 0;i--){
+            for(int i = stack.size() -1; i >= 0;i--){
                 Book a = stack.get(i);
-                System.out.printf("| %-4s | %-10d | %-45s | %-20s |\n",count + ".",a.isbn,a.title,a.author);
+                System.out.printf("| %-4s | %-10d | %-45s | %-20s |\n",count + ".",a.getIsbn(),a.getTitle(),a.getAuthor());
                 count++;
             }
         }
