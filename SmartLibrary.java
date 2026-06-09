@@ -13,13 +13,7 @@ public class SmartLibrary implements LibraryADT {
 
     @Override
     public void addBook(int isbn, String title, String author) {
-
-        //check for duplicate ISBN
-        if (catalogue.search(isbn) != null) {
-            System.out.println("Error! ISBN " + isbn + " already exists.");
-            return;
-        }
-
+        
         catalogue.insert(isbn, title, author);
         System.out.println("Success! "+title+" has been added to the catalogue.");
     }
@@ -135,6 +129,13 @@ public class SmartLibrary implements LibraryADT {
                    System.out.print("Enter ISBN (Integers only) : ");
                    int isbn = Integer.parseInt(sc.nextLine().trim());
                    System.out.print("Enter title : ");
+
+                   //check for duplicate ISBN
+                   if (catalogue.search(isbn) != null) {
+                       System.out.println("Error! ISBN " + isbn + " already exists.");
+                       return;
+                   }
+                   
                    String title = sc.nextLine().trim();
                    System.out.print("Enter author : ");
                    String author = sc.nextLine().trim();
@@ -147,6 +148,12 @@ public class SmartLibrary implements LibraryADT {
                    break;
                    
                case 2 :
+                   //Will stop operate and return to the menu if catalogue is empty
+                   if(catalogue.isEmpty()){
+                       System.out.println("Catalogue is empty. No record found.");
+                       return;
+                   }
+                   
                    fileManager.displayAll(catalogue);
                    System.out.println("\nSearch options: ");
                    System.out.println("1. Search by title\n2. Search by ISBN");
@@ -175,7 +182,13 @@ public class SmartLibrary implements LibraryADT {
                    break;
                    
                case 3 :
-                    fileManager.displayAll(catalogue);
+                   //Will stop operate and return to the menu if catalogue is empty
+                   if(catalogue.isEmpty()){
+                       System.out.println("Books cannot be borrowed. Catalogue is empty.");
+                       return;
+                   }
+                   
+                   fileManager.displayAll(catalogue);
                    System.out.println("Enter ISBN to borrow : ");
                    int borrowIsbn = Integer.parseInt(sc.nextLine().trim());
                    borrowBook(borrowIsbn);
