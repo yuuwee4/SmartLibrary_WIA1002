@@ -73,12 +73,6 @@ public class SmartLibrary implements LibraryADT {
     }
 
     @Override
-    public void viewAllBooks(){
-        System.out.println("Current Library Catalogue (Sorted by ISBN)");
-        catalogue.inorder();
-    }
-    
-    @Override
     public void removeBookFromCatalogue(int isbn){
         Book b = catalogue.search(isbn);
         if (b != null){
