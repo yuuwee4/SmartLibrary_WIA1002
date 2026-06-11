@@ -11,4 +11,6 @@ public interface LibraryADT {
     void viewLatestHistory();
     
     void removeBookFromCatalogue(int isbn);
+
+  
 }

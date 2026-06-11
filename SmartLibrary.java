@@ -1,24 +1,22 @@
 import java.util.*;
 
+
 public class SmartLibrary implements LibraryADT {
 
     private BookBST catalogue = new BookBST();
     private BorrowStack history = new BorrowStack();
+    private RequestQueue requestQueue = new RequestQueue();
+    private HashMap<String, StudentBorrowed> studentBorrowedMap = new HashMap<>();
     
-    // Addition : Handles file operations to load and save data
     private LibraryManagement fileManager = new LibraryManagement();
-
-    // Addition : Default text file for storing the library catalogue
     private String fileName = "book_library.txt";
 
     @Override
     public void addBook(int isbn, String title, String author) {
-        
         catalogue.insert(isbn, title, author);
         System.out.println("Success! "+title+" has been added to the catalogue.");
     }
     
-    // Addition : Searches for books by title using the file manager.
     @Override
     public void searchBook(String name){
         ArrayList<Book> a = fileManager.searchByTitle(name,catalogue);
@@ -53,14 +51,10 @@ public class SmartLibrary implements LibraryADT {
     public void borrowBook(int isbn) {
        Book b = catalogue.search(isbn);
        if (b != null){
-            //Create a copy for history
             Book borrowedBook = new Book(b.getIsbn(), b.getTitle(), b.getAuthor());
-
-           history.push(borrowedBook);
-
-           catalogue.delete(isbn);
-
-           System.out.println("Success! You have borrowed "+b.getTitle()+".");
+            history.push(borrowedBook);
+            catalogue.delete(isbn);
+            System.out.println("Success! You have borrowed "+b.getTitle()+".");
        } else {
            System.out.println("Error! Cannot borrow. Book is not in catalogue.");
        }
@@ -82,121 +76,374 @@ public class SmartLibrary implements LibraryADT {
             System.out.println("Error! Cannot remove. Book with ISBN "+isbn+" does not exist.");
         }
     }
-    
-    public void runMenu() {
+
+    public void returnBook(int isbn) {
+        if (history.isEmpty()) {
+            System.out.println("Error! No borrowing history. Cannot return book.");
+            return;
+        }
+
+        Book returned = history.pop();
+        if (returned.getIsbn() == isbn) {
+            catalogue.insert(isbn, returned.getTitle(), returned.getAuthor());
+            System.out.println("Success! "+returned.getTitle()+" has been returned to the catalogue.");
+        } else {
+            history.push(returned);
+            System.out.println("Error! The book being returned (ISBN: "+isbn+") does not match the most recently borrowed book.");
+        }
+    }
+
+    public void viewAllHistory() {
+        System.out.println("\n--- Complete Borrowing History ---");
+        history.show();
+    }
+
+    public void adminMenu(Scanner sc, String adminName) {
         fileManager.loadFromFile(fileName, catalogue);
-        Scanner sc = new Scanner(System.in);
-        while (true){
-            System.out.println("\n^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^");
-            System.out.println("Welcome to Smart Library!");
-            System.out.println("^*^*^*^*^*^*^^*^*^*^*^*^*^*^*^*^");
+        boolean running = true;
+        
+        while (running) {
+            System.out.println("\n╔════════════════════════════════════════╗");
+            System.out.println("║           ADMIN MENU ("+adminName+")          ║");
+            System.out.println("╚════════════════════════════════════════╝");
             System.out.println("1. Add Book");
-            System.out.println("2. Search Book");
-            System.out.println("3. Borrow Book");
-            System.out.println("4. View History");
-            System.out.println("5. Exit");
-            System.out.print("Please enter your choice : ");
+            System.out.println("2. Remove Book from Catalogue");
+            System.out.println("3. View All Books");
+            System.out.println("4. Approve Borrow Request");
+            System.out.println("5. Approve Return Request");
+            System.out.println("6. View Borrow History");
+            System.out.println("7. Total Books");
+            System.out.println("8. Logout");
+            System.out.print("Choose option: ");
             
             try {
                 int choice = Integer.parseInt(sc.nextLine().trim());
                 
-                if (choice == 5){
-                    System.out.println("Exiting Smart Library System. Goodbye!");
-                    fileManager.saveToFile("book_library.txt",catalogue);
-                    break;
+                switch(choice) {
+                    case 1:
+                        System.out.print("Enter ISBN: ");
+                        int isbn = Integer.parseInt(sc.nextLine().trim());
+                        
+                        if (catalogue.search(isbn) != null) {
+                            System.out.println("Error! ISBN already exists.");
+                            sleep();
+                            break;
+                        }
+                        
+                        System.out.print("Enter title: ");
+                        String title = sc.nextLine().trim();
+                        System.out.print("Enter author: ");
+                        String author = sc.nextLine().trim();
+                        
+                        if (!title.isEmpty() && !author.isEmpty()) {
+                            addBook(isbn, title, author);
+                        } else {
+                            System.out.println("Error! Title and author cannot be empty.");
+                        }
+                        sleep();
+                        break;
+                        
+                    case 2:
+                        System.out.print("Enter ISBN to remove: ");
+                        int removeIsbn = Integer.parseInt(sc.nextLine().trim());
+                        removeBookFromCatalogue(removeIsbn);
+                        sleep();
+                        break;
+                        
+                    case 3:
+                        if (catalogue.isEmpty()) {
+                            System.out.println("Catalogue is empty.");
+                        } else {
+                            fileManager.displayAll(catalogue);
+                        }
+                        sleep();
+                        break;
+                        
+                    case 4:
+                        approveBorrowRequest(sc);
+                        sleep();
+                        break;
+                        
+                    case 5:
+                        approveReturnRequest(sc);
+                        sleep();
+                        break;
+                        
+                    case 6:
+                        viewLatestHistory();
+                        sleep();
+                        break;
+                        
+                    case 7:
+                        System.out.println("Total books in catalogue: " + catalogue.getTotalBooksCount());
+                        sleep();
+                        break;
+                        
+                    case 8:
+                        fileManager.saveToFile(fileName, catalogue);
+                        running = false;
+                        break;
+                        
+                    default:
+                        System.out.println("Invalid option.");
+                        sleep();
                 }
-                
-                handleChoice(choice, sc);
-                
-            } catch (NumberFormatException e){
-                System.out.println("Invalid input. Please enter a valid number (1-5).");
+            } catch (NumberFormatException e) {
+                System.out.println("Error! Invalid input.");
             }
-                    
         }
-        sc.close();
     }
-    
-   private void handleChoice(int choice, Scanner sc){
-       try {
-           switch (choice){
-               case 1 :
-                   System.out.print("Enter ISBN (Integers only) : ");
-                   int isbn = Integer.parseInt(sc.nextLine().trim());
-                   System.out.print("Enter title : ");
 
-                   //check for duplicate ISBN
-                   if (catalogue.search(isbn) != null) {
-                       System.out.println("Error! ISBN " + isbn + " already exists.");
-                       return;
-                   }
-                   
-                   String title = sc.nextLine().trim();
-                   System.out.print("Enter author : ");
-                   String author = sc.nextLine().trim();
-                   
-                   if (title.isEmpty() || author.isEmpty()){
-                       System.out.println("Error! Title and author cannot be empty!");
-                   } else {
-                       addBook(isbn, title, author);
-                   }
-                   break;
-                   
-               case 2 :
-                   //Will stop operate and return to the menu if catalogue is empty
-                   if(catalogue.isEmpty()){
-                       System.out.println("Catalogue is empty. No record found.");
-                       return;
-                   }
-                   
-                   fileManager.displayAll(catalogue);
-                   System.out.println("\nSearch options: ");
-                   System.out.println("1. Search by title\n2. Search by ISBN");
-                   System.out.print("Choose option (1 or 2) : ");
-                   int userInput = Integer.parseInt(sc.nextLine().trim());
-                   try{
-                    switch(userInput){
-                        case 1:
-                            // Addition : Handles title search
-                            System.out.print("Enter title to search : ");
+    public void studentMenu(Scanner sc, String studentName) {
+        fileManager.loadFromFile(fileName, catalogue);
+        boolean running = true;
+        
+        while (running) {
+            System.out.println("\n╔════════════════════════════════════════╗");
+            System.out.println("║         STUDENT MENU ("+studentName+")        ║");
+            System.out.println("╚════════════════════════════════════════╝");
+            System.out.println("1. Search Book");
+            System.out.println("2. View All Books");
+            System.out.println("3. View Approved Books");
+            System.out.println("4. Request to Borrow");
+            System.out.println("5. Request to Return");
+            System.out.println("6. Logout");
+            System.out.print("Choose option: ");
+            
+            try {
+                int choice = Integer.parseInt(sc.nextLine().trim());
+                
+                switch(choice) {
+                    case 1:
+                        if (catalogue.isEmpty()) {
+                            System.out.println("Catalogue is empty.");
+                            sleep();
+                            break;
+                        }
+                        
+                        System.out.println("Search options:");
+                        System.out.println("1. Search by title\n2. Search by ISBN");
+                        System.out.print("Choose option: ");
+                        int searchChoice = Integer.parseInt(sc.nextLine().trim());
+                        
+                        if (searchChoice == 1) {
+                            System.out.print("Enter title: ");
                             String search = sc.nextLine().trim();
                             searchBook(search);
-                            break;
-                        case 2:
-                            System.out.println("Enter ISBN to search : ");
+                        } else if (searchChoice == 2) {
+                            System.out.print("Enter ISBN: ");
                             int searchIsbn = Integer.parseInt(sc.nextLine().trim());
                             searchBook(searchIsbn);
+                        } else {
+                            System.out.println("Invalid option.");
+                        }
+                        sleep();
+                        break;
+                        
+                    case 2:
+                        if (catalogue.isEmpty()) {
+                            System.out.println("Catalogue is empty.");
+                        } else {
+                            fileManager.displayAll(catalogue);
+                        }
+                        sleep();
+                        break;
+                        
+                   case 3:
+                        requestQueue.displayApprovedBorrows(studentName);
+                        ArrayList<BorrowRequest> approved = requestQueue.getApprovedRequestsByStudent(studentName);
+                        if (approved.isEmpty()) {
+                            sleep();
                             break;
-                        default: 
-                            System.out.println("Invalid choice. Please select an option between 1-2");
+                        }
+                        System.out.print("\nEnter book number to confirm pickup (0 to skip): ");
+                        try {
+                            int pickupChoice = Integer.parseInt(sc.nextLine().trim());
+                            if (pickupChoice > 0) {
+                                if (pickupChoice <= approved.size()) {
+                                    BorrowRequest approvedReq = approved.get(pickupChoice - 1);
+                                    borrowBook(approvedReq.getIsbn());
+                                    
+                                    StudentBorrowed studentBorrow = studentBorrowedMap.getOrDefault(studentName, new StudentBorrowed(studentName));
+                                    studentBorrow.addBook(approvedReq.getIsbn(), approvedReq.getTitle(), approvedReq.getAuthor());
+                                    studentBorrowedMap.put(studentName, studentBorrow);
+                                    
+                                    approvedReq.setStatus("PICKED_UP");
+                                    fileManager.saveToFile(fileName, catalogue); // <-- ADD THIS
+                                    System.out.println("Book borrowed successfully!");
+                                } else {
+                                    System.out.println("Invalid book number.");
+                                }
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input.");
+                        }
+                        sleep();
+                        break;
+                        
+                    case 4:
+                        if (catalogue.isEmpty()) {
+                            System.out.println("No books available to borrow.");
+                            sleep();
                             break;
-                    }
-                   }catch(NumberFormatException e){
-                        System.out.println("Error! Must be a valid integer number. Operation canceled.");
-                   }
-                   break;
-                   
-               case 3 :
-                   //Will stop operate and return to the menu if catalogue is empty
-                   if(catalogue.isEmpty()){
-                       System.out.println("Books cannot be borrowed. Catalogue is empty.");
-                       return;
-                   }
-                   
-                   fileManager.displayAll(catalogue);
-                   System.out.println("Enter ISBN to borrow : ");
-                   int borrowIsbn = Integer.parseInt(sc.nextLine().trim());
-                   borrowBook(borrowIsbn);
-                   break;
-                   
-               case 4 :
-                   viewLatestHistory();
-                   break;
-                   
-               default :
-                   System.out.println("Invalid choice. Please select an option between 1-5.");
-           }
-       } catch (NumberFormatException e){
-           System.out.println("Error! ISBN must be a valid integer number. Operation canceled.");
-       }
-   }
+                        }
+                        
+                        fileManager.displayAll(catalogue);
+                        System.out.print("Enter ISBN to request: ");
+                        int borrowIsbn = Integer.parseInt(sc.nextLine().trim());
+                        
+                        Book bookToBorrow = catalogue.search(borrowIsbn);
+                        if (bookToBorrow != null) {
+                            BorrowRequest req = new BorrowRequest(studentName, borrowIsbn, bookToBorrow.getTitle(), bookToBorrow.getAuthor(), "BORROW");
+                            requestQueue.addRequest(req);
+                            System.out.println("Borrow request submitted. Waiting for admin approval...");
+                        } else {
+                            System.out.println("Error! Book with ISBN " + borrowIsbn + " not found in catalogue.");
+                        }
+                        sleep();
+                        break;
+                        
+                    case 5:
+                        StudentBorrowed borrowed = studentBorrowedMap.get(studentName);
+                        if (borrowed == null || borrowed.isEmpty()) {
+                            System.out.println("You have no borrowed books to return.");
+                            sleep();
+                            break;
+                        }
+                        
+                        borrowed.displayBorrowedBooks();
+                        System.out.print("\nEnter book number to return (0 to skip): ");
+                        try {
+                            int returnChoice = Integer.parseInt(sc.nextLine().trim());
+                            if (returnChoice > 0) {
+                                StudentBorrowed.BorrowedBook bookToReturn = borrowed.getBookByIndex(returnChoice - 1);
+                                if (bookToReturn != null) {
+                                    BorrowRequest returnReq = new BorrowRequest(studentName, bookToReturn.isbn, bookToReturn.title, bookToReturn.author, "RETURN");
+                                    requestQueue.addRequest(returnReq);
+                                    System.out.println("✓ Return request submitted. Waiting for admin approval...");
+                                } else {
+                                    System.out.println("Invalid book number.");
+                                }
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input.");
+                        }
+                        sleep();
+                        break;
+                        
+                    case 6:
+                        running = false;
+                        break;
+                        
+                    default:
+                        System.out.println("Invalid option.");
+                        sleep();
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Error! Invalid input.");
+            }
+        }
+    }
+
+    private void approveBorrowRequest(Scanner sc) {
+        ArrayList<BorrowRequest> pending = requestQueue.getPendingBorrowRequests();
+        
+        if (pending.isEmpty()) {
+            System.out.println("No pending borrow requests.");
+            return;
+        }
+
+        requestQueue.displayPendingRequests("BORROW");
+        System.out.print("\nEnter request number to approve (0 to cancel): ");
+        
+        try {
+            int choice = Integer.parseInt(sc.nextLine().trim());
+            if (choice == 0) return;
+            
+            if (choice > 0 && choice <= pending.size()) {
+                BorrowRequest req = pending.get(choice - 1);
+                
+                System.out.println("\n--- Approve/Deny Request ---");
+                System.out.println("Request from: " + req.getStudentName());
+                System.out.println("Book: " + req.getTitle() + " (ISBN: " + req.getIsbn() + ")");
+                System.out.println("1. Approve");
+                System.out.println("2. Deny");
+                System.out.print("Choose action: ");
+                
+                int action = Integer.parseInt(sc.nextLine().trim());
+                
+            if (action == 1) {
+                req.setStatus("APPROVED");
+                // Auto-deny all other pending requests for the same ISBN
+                requestQueue.denyOtherPendingBorrowRequests(req.getIsbn(), req.getStudentName());
+                System.out.println("✓ Request approved! Student can now pick up the book.");
+            } else if (action == 2) {
+                req.setStatus("DENIED");
+                System.out.println("✓ Request denied.");
+            }
+            } else {
+                System.out.println("Invalid request number.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Error! Invalid input.");
+        }
+    }
+
+    private void approveReturnRequest(Scanner sc) {
+        ArrayList<BorrowRequest> pending = requestQueue.getPendingReturnRequests();
+        
+        if (pending.isEmpty()) {
+            System.out.println("No pending return requests.");
+            return;
+        }
+
+        requestQueue.displayPendingRequests("RETURN");
+        System.out.print("\nEnter request number to approve (0 to cancel): ");
+        
+        try {
+            int choice = Integer.parseInt(sc.nextLine().trim());
+            if (choice == 0) return;
+            
+            if (choice > 0 && choice <= pending.size()) {
+                BorrowRequest req = pending.get(choice - 1);
+                
+                System.out.println("\n--- Approve/Deny Return Request ---");
+                System.out.println("Request from: " + req.getStudentName());
+                System.out.println("Book: " + req.getTitle() + " (ISBN: " + req.getIsbn() + ")");
+                System.out.println("1. Approve Return");
+                System.out.println("2. Deny Return");
+                System.out.print("Choose action: ");
+                
+                int action = Integer.parseInt(sc.nextLine().trim());
+                
+                        if (action == 1) {
+            addBook(req.getIsbn(), req.getTitle(), req.getAuthor());
+            
+            StudentBorrowed borrowed = studentBorrowedMap.get(req.getStudentName());
+            if (borrowed != null) {
+                borrowed.removeBook(req.getIsbn());
+            }
+            
+            req.setStatus("APPROVED");
+            fileManager.saveToFile(fileName, catalogue); // <-- ADD THIS
+            System.out.println("✓ Return approved! Book returned to catalogue.");
+        }else if (action == 2) {
+                    req.setStatus("DENIED");
+                    System.out.println("✓ Return denied.");
+                }
+            } else {
+                System.out.println("Invalid request number.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Error! Invalid input.");
+        }
+    }
+
+    public void sleep(){
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

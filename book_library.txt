@@ -1,5 +1,4 @@
-111111,Alice's Adventure in Wonderland,Lewis Carroll
-112211,A Tale of Two Cities,Charles Dickens
+111111,Alice's adventure in wonderland,lewis caroll
 222222,The Hobbit,J. R. R. Tolkien
 242424,Harry Potter and the Chamber of Secrets,J. K. Rowling
 242425,Harry Potter and the Prisoner of Azkaban,J. K. Rowling
@@ -12,5 +11,3 @@
 545456,Fantastic Beast: The Secrets of Dumbledore,J. K. Rowling
 656566,Sophie's World,Jostein Gaarder
 666331,Black Beauty,Anna Sewell
-666633,Lolita,Vladimir Nabokov
-666666,The Alchemits,Paulo Coelho
